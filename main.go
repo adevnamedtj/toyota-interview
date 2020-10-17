@@ -31,10 +31,12 @@ func main() {
 	log.Printf(" “DEES” : true | %v", canForm("DEES", grid))
 }
 
-func canForm(w string, grid [][]string) bool {
+// canForm will try to frame the target by matching the non diagonal neighbour letters
+func canForm(target string, grid [][]string) bool {
 
-	for _, position := range positions(string(w[0]), grid) {
-		if ok := tryAPosition(position[0], position[1], w, grid); ok {
+	// pull all possible start positions for the first letter in target
+	for _, position := range GetPositionsByChar(string(target[0]), grid) {
+		if ok := tryAPosition(position[0], position[1], target, grid); ok {
 			return true
 		}
 	}
@@ -42,16 +44,17 @@ func canForm(w string, grid [][]string) bool {
 	return false
 }
 
-func tryAPosition(i, j int, w string, grid [][]string) bool {
-	log.Printf("------------------------------------------checking for %v with %v's grid position: %v, %v", w, string(w[0]), i, j)
+// tryAPosition check wheather target can be framed for grid position i,j
+func tryAPosition(i, j int, target string, grid [][]string) bool {
+	log.Printf("------------------------------------------checking for %v with %v's grid position: %v, %v", target, string(target[0]), i, j)
 	var ok bool
-	for li, l := range w {
+	for li, l := range target {
 
 		if li == 0 {
 			continue
 		}
 		//log.Printf("-------------looking for ------- %v", string(l))
-		in, jn, okn := isANeightbour(i, j, string(l), grid)
+		in, jn, okn := isANeighbour(i, j, string(l), grid)
 		if okn {
 			i = in
 			j = jn
@@ -63,7 +66,8 @@ func tryAPosition(i, j int, w string, grid [][]string) bool {
 	return ok
 }
 
-func isANeightbour(i, j int, next string, grid [][]string) (int, int, bool) {
+// isANeighbour determines char next can found in non diagonal positions from position i,j
+func isANeighbour(i, j int, next string, grid [][]string) (int, int, bool) {
 
 	if i != 0 && j != 0 {
 		// check left neighbour
@@ -119,7 +123,8 @@ func isANeightbour(i, j int, next string, grid [][]string) (int, int, bool) {
 	return 0, 0, false
 }
 
-func positions(s string, grid [][]string) [][]int {
+// GetPositionsByChar return all possible positions of a char s the grid
+func GetPositionsByChar(s string, grid [][]string) [][]int {
 
 	var positions [][]int
 
