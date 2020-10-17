@@ -18,25 +18,51 @@ import (
 //“DEES” : true
 //
 //Write a function which takes in a string and this grid and return true if the word can be formed from this grid. Up down left right. Only visit cell once
-func main() {
 
-	grid := [][]string{
-		{"A", "B", "C", "E"},
-		{"S", "F", "C", "S"},
-		{"A", "D", "E", "E"},
+var grid = [][]string{
+	{"A", "B", "C", "E"},
+	{"S", "F", "C", "S"},
+	{"A", "D", "E", "E"},
+}
+
+type position struct {
+	i, j int
+}
+
+var pMap = make(map[position]string)
+
+// getValue provide a cache layer to make a cell is visited twice
+func getValue(i, j int) string {
+	p := position{
+		i: i,
+		j: j,
+	}
+	v, ok := pMap[p]
+
+	if ok {
+		//log.Printf("chached %v: %v", p, v)
+		return v
 	}
 
-	log.Printf(" “ABCCEDX” : false | %v", canForm("ABCCEDX", grid))
-	log.Printf(" “ECCEDAS” : true | %v", canForm("ECCEDAS", grid))
-	log.Printf(" “DEES” : true | %v", canForm("DEES", grid))
+	v = grid[i][j]
+
+	pMap[p] = v
+
+	return v
+}
+func main() {
+
+	log.Printf("------------ “ABCCEDX” : false | %v", canForm("ABCCEDX"))
+	log.Printf("------------ “ECCEDAS” : true | %v", canForm("ECCEDAS"))
+	log.Printf("------------ “DEES” : true | %v", canForm("DEES"))
 }
 
 // canForm will try to frame the target by matching the non diagonal neighbour letters
-func canForm(target string, grid [][]string) bool {
+func canForm(target string) bool {
 
 	// pull all possible start positions for the first letter in target
-	for _, position := range GetPositionsByChar(string(target[0]), grid) {
-		if ok := tryAPosition(position[0], position[1], target, grid); ok {
+	for _, position := range GetPositionsByChar(string(target[0])) {
+		if ok := tryAPosition(position[0], position[1], target); ok {
 			return true
 		}
 	}
@@ -45,7 +71,7 @@ func canForm(target string, grid [][]string) bool {
 }
 
 // tryAPosition check wheather target can be framed for grid position i,j
-func tryAPosition(i, j int, target string, grid [][]string) bool {
+func tryAPosition(i, j int, target string) bool {
 	log.Printf("------------------------------------------checking for %v with %v's grid position: %v, %v", target, string(target[0]), i, j)
 	var ok bool
 	for li, l := range target {
@@ -54,7 +80,7 @@ func tryAPosition(i, j int, target string, grid [][]string) bool {
 			continue
 		}
 		//log.Printf("-------------looking for ------- %v", string(l))
-		in, jn, okn := isANeighbour(i, j, string(l), grid)
+		in, jn, okn := isANeighbour(i, j, string(l))
 		if okn {
 			i = in
 			j = jn
@@ -67,14 +93,14 @@ func tryAPosition(i, j int, target string, grid [][]string) bool {
 }
 
 // isANeighbour determines char next can found in non diagonal positions from position i,j
-func isANeighbour(i, j int, next string, grid [][]string) (int, int, bool) {
+func isANeighbour(i, j int, next string) (int, int, bool) {
 
 	if i != 0 && j != 0 {
 		// check left neighbour
 		ni, nj := i, j-1
 
 		if nj >= 0 {
-			nv := grid[ni][nj]
+			nv := getValue(ni, nj)
 
 			if next == nv {
 				log.Printf("left | %v | %v,%v > %v", next, ni, nj, nv)
@@ -88,7 +114,7 @@ func isANeighbour(i, j int, next string, grid [][]string) (int, int, bool) {
 	if i == 0 {
 		ni = len(grid) - 1
 	}
-	nv := grid[ni][nj]
+	nv := getValue(ni, nj)
 
 	if next == nv {
 		log.Printf("  up | %v | %v,%v > %v", next, ni, nj, nv)
@@ -100,7 +126,7 @@ func isANeighbour(i, j int, next string, grid [][]string) (int, int, bool) {
 	if i == len(grid)-1 {
 		ni = 0
 	}
-	nv = grid[ni][nj]
+	nv = getValue(ni, nj)
 
 	if next == nv {
 		log.Printf("down | %v | %v,%v > %v", next, ni, nj, nv)
@@ -111,7 +137,7 @@ func isANeighbour(i, j int, next string, grid [][]string) (int, int, bool) {
 		// check right
 		if len(grid[i]) > j+1 {
 			ni, nj := i, j+1
-			nv := grid[ni][nj]
+			nv := getValue(ni, nj)
 
 			if next == nv {
 				log.Printf("right | %v | %v,%v > %v", next, ni, nj, nv)
@@ -124,12 +150,16 @@ func isANeighbour(i, j int, next string, grid [][]string) (int, int, bool) {
 }
 
 // GetPositionsByChar return all possible positions of a char s the grid
-func GetPositionsByChar(s string, grid [][]string) [][]int {
+func GetPositionsByChar(s string) [][]int {
 
 	var positions [][]int
 
 	for i, set := range grid {
 		for j, l := range set {
+			pMap[position{
+				i: i,
+				j: j,
+			}] = l
 			if l == s {
 				positions = append(positions, []int{i, j})
 
