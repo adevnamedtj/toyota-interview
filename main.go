@@ -31,7 +31,7 @@ type position struct {
 
 var pMap = make(map[position]string)
 
-// getValue provide a cache layer to make a cell is visited twice
+// getValue provide a cache layer to make a cell is not visited twice
 func getValue(i, j int) string {
 	p := position{
 		i: i,
